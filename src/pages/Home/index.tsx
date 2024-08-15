@@ -42,7 +42,7 @@ const Update = (props: { onSuccess: (data: any) => void; initValue: any }) => {
         修改
       </Button>
       <Modal
-        title="新增"
+        title="修改g"
         open={open}
         onCancel={() => setOpen(false)}
         onOk={() => {
