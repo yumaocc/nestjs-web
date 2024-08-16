@@ -3,6 +3,8 @@ import { Button, Flex, Form, Input, Modal, Space, Table } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
+const BASE_URL = 'https://ym-nestjs-qxljfuhn6-yumaoccs-projects.vercel.app/';
+
 const Add = (props: { onSuccess: (data: any) => void }) => {
   const [form] = Form.useForm();
   const [open, setOpen] = useState(false);
@@ -72,19 +74,19 @@ export default function Home() {
   const { data, refresh } = useRequest(() =>
     request('/user', {
       method: 'get',
-      baseURL: 'http://localhost:3005/',
+      baseURL: BASE_URL,
     }),
   );
 
   const handleDelete = async (id: string) => {
-    await request('/user/delete', { method: 'post', baseURL: 'http://localhost:3005/', data: { id: id } });
+    await request('/user/delete', { method: 'post', baseURL: BASE_URL, data: { id: id } });
     refresh();
   };
 
   const handleAdd = async (data: any) => {
     await request('/user/create', {
       method: 'post',
-      baseURL: 'http://localhost:3005/',
+      baseURL: BASE_URL,
       data: {
         ...data,
         startTime: dayjs().valueOf(),
@@ -96,7 +98,7 @@ export default function Home() {
   const handleUpdate = async (data: any) => {
     await request('/user/update', {
       method: 'post',
-      baseURL: 'http://localhost:3005/',
+      baseURL: BASE_URL,
       data: {
         ...data,
       },
