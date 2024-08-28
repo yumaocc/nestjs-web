@@ -3,9 +3,10 @@
   "author": "",
   "scripts": {
     "build": "max build",
-    "dev": "max dev",
+    "dev": "NODE_ENV=DEV max dev",
     "format": "prettier --cache --write .",
     "postinstall": "max setup",
+    "prd": "NODE_ENV=PRD max dev",
     "prepare": "husky",
     "setup": "max setup",
     "start": "npm run dev"
@@ -15,6 +16,7 @@
     "@ant-design/pro-components": "^2.4.4",
     "@umijs/max": "^4.3.12",
     "antd": "^5.4.0",
+    "axios": "^1.7.4",
     "dayjs": "^1.11.12"
   },
   "devDependencies": {

@@ -1,9 +1,15 @@
-import { request, useRequest } from '@umijs/max';
+import http from '@/utils/http';
+import { useRequest } from '@umijs/max';
+
 import { Button, Flex, Form, Input, Modal, Space, Table } from 'antd';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 
-const BASE_URL = 'https://ym-nestjs-qxljfuhn6-yumaoccs-projects.vercel.app/';
+// todo 域名审批没过，暂时直接用公网ip进行访问
+// const BASE_URL = 'http://120.55.101.5:3005/';
+console.log(process.env.NODE_ENV);
+
+const BASE_URL = process.env.NODE_ENV === 'development' ? 'http://localhost:3000' : 'http://120.55.101.5:3005/';
 
 const Add = (props: { onSuccess: (data: any) => void }) => {
   const [form] = Form.useForm();
@@ -27,6 +33,9 @@ const Add = (props: { onSuccess: (data: any) => void }) => {
             <Input />
           </Form.Item>
           <Form.Item name={'age'} label="年领">
+            <Input />
+          </Form.Item>
+          <Form.Item name={'password'} label="密码">
             <Input />
           </Form.Item>
         </Form>
@@ -70,21 +79,40 @@ const Update = (props: { onSuccess: (data: any) => void; initValue: any }) => {
     </>
   );
 };
-export default function Home() {
-  const { data, refresh } = useRequest(() =>
-    request('/user', {
-      method: 'get',
-      baseURL: BASE_URL,
-    }),
+const Login = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button onClick={() => setOpen(true)}>登录</Button>
+      <Modal title="登录" open={open} footer={[]} onCancel={() => setOpen(false)}>
+        <Form
+          initialValues={{ name: '小白', password: '111' }}
+          onFinish={(v) => {
+            http.post('/login', v);
+          }}
+        >
+          <Form.Item label="账号" name={'name'}>
+            <Input />
+          </Form.Item>
+          <Form.Item label="密码" name={'password'}>
+            <Input />
+          </Form.Item>
+          <Button htmlType="submit">提交</Button>
+        </Form>
+      </Modal>
+    </>
   );
+};
+export default function Home() {
+  const { data, refresh, run } = useRequest((params: any) => http.post('/user/query', params || {}));
 
   const handleDelete = async (id: string) => {
-    await request('/user/delete', { method: 'post', baseURL: BASE_URL, data: { id: id } });
+    await http('/user/delete', { method: 'post', baseURL: BASE_URL, data: { id: id } });
     refresh();
   };
 
   const handleAdd = async (data: any) => {
-    await request('/user/create', {
+    await http('/user/create', {
       method: 'post',
       baseURL: BASE_URL,
       data: {
@@ -96,7 +124,7 @@ export default function Home() {
   };
 
   const handleUpdate = async (data: any) => {
-    await request('/user/update', {
+    await http('/user/update', {
       method: 'post',
       baseURL: BASE_URL,
       data: {
@@ -110,9 +138,18 @@ export default function Home() {
     <>
       <Flex justify="space-between">
         <Add onSuccess={(data) => handleAdd(data)} />
+        <Login />
       </Flex>
       <Table
-        dataSource={data}
+        dataSource={data?.records}
+        pagination={{
+          current: data?.current,
+          pageSize: data?.pageSize,
+          total: data?.total,
+          onChange: (current, pageSize) => {
+            run({ current, pageSize });
+          },
+        }}
         columns={[
           {
             title: '名称',
@@ -127,7 +164,7 @@ export default function Home() {
           {
             title: '更新时间',
             dataIndex: 'updateTime',
-            render: (v) => dayjs(v).format('YYYY-MM-DD HH:mm:ss'),
+            render: (v) => v && dayjs(v).format('YYYY-MM-DD HH:mm:ss'),
           },
           {
             title: '操作',
@@ -135,7 +172,7 @@ export default function Home() {
             render: (row) => {
               return (
                 <Space>
-                  <Button danger type="link" onClick={() => handleDelete(row._id)}>
+                  <Button danger type="link" onClick={() => handleDelete(row.id)}>
                     删除
                   </Button>
                   <Update
